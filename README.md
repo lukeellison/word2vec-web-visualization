@@ -1,5 +1,9 @@
 ## Webapp for visualizing word2vec/GloVe-style word embeddings
 
+### Compatability
+This repo is forked from https://github.com/danielvarga/word2vec-web-visualization but updated to be compatable with Python 3.
+> Checked with python verison 3.7.12
+
 ### Installation
 
 ```
