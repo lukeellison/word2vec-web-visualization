@@ -40,22 +40,15 @@ def read(f):
     m = {}
     words = []
     d = None
-    errorCount = 0
     for l in f:
         a = l.strip("\n").split(" ")
-        try:
-            w = a[0].decode("utf-8")
-        except:
-            errorCount +=1
-            continue
+        w = a[0]
         words.append(w)
-        v = map(float, a[1:])
+        v = list(map(float, a[1:]))
         if d is not None:
             assert d==len(v)
         d = len(v)
         m[w] = v
-    if errorCount>0:
-        logg("glove datafile had unicode problems",errorCount,"lines dropped.")
     return m, words, d
 
 
@@ -83,7 +76,7 @@ def queryAnnoyIndex(model, annoyIndex, words, dim, n):
         neis = annoyIndex.get_nns_by_item(i,3)
         if i not in neis :
             badSign += 1
-        print w, " ".join( words[i] for i in neis )
+        print(w, " ".join( words[i] for i in neis ))
         if i>0 and (i-1)*10/n != i*10/n:
                logg("Annoy index querying at", i*100/n, "percent.")
     end()
@@ -92,7 +85,7 @@ def queryAnnoyIndex(model, annoyIndex, words, dim, n):
 
 def setupGloveService(gloveFile):
     start("Reading glove datafile")
-    model, words, dim = read(file(gloveFile))
+    model, words, dim = read(open(gloveFile))
     end()
     annoyIndex = buildAnnoyIndex(model, words, dim)
     return model, words, annoyIndex, dim
@@ -176,7 +169,7 @@ class GloveService:
         return localWords
 
     def queryPure(self, wordOrWords, limit=100):
-        justAWord = isinstance(wordOrWords, basestring)
+        justAWord = isinstance(wordOrWords, str)
         if not justAWord and len(wordOrWords)==0:
             return []
         if justAWord:
@@ -208,17 +201,17 @@ def cloudToJson(localWords, reduced):
 def testSerialization():
     gloveFile, savePath = sys.argv[1:]
     gloveService = GloveService(gloveFile)
-    print gloveService.query("apple", limit=10)
+    print(gloveService.query("apple", limit=10))
     gloveService.save(savePath)
     gloveService.load(savePath)
-    print gloveService.query("apple", limit=10)
+    print(gloveService.query("apple", limit=10))
     gloveService2 = GloveService(savePath, loadStateFromSaveFile=True)
-    print gloveService2.query("apple", limit=10)
+    print(gloveService2.query("apple", limit=10))
 
 
 def testGlove(gloveService, words):
     js = gloveService.queryJson(words, limit=30, useGlobalProjection=False)
-    print json.dumps(js, indent=4)
+    print(json.dumps(js, indent=4))
 
 
 def main():

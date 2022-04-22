@@ -7,7 +7,7 @@ import glove
 def intersection(wordList, gloveService, limit=10, wordWeights=None):
     if wordWeights is None:
         wordWeights = [ 1.0 for word in wordList ]
-    print wordWeights
+    print(wordWeights)
     weightedWords = zip(wordList, wordWeights)
     filteredWeightedWords = [ (word, weight) for (word, weight) in weightedWords if (word in gloveService.reWords) ]
     # Beware, we overwrite the wordList variable, not the original input anymore!
@@ -61,7 +61,7 @@ def intersection(wordList, gloveService, limit=10, wordWeights=None):
     zipped = zip(summedDistances.tolist(), [ gloveService.words[i] for i in inter ])
     # The input words are forced to be in the output list, at the top positions:
     inputWords = set(wordList)
-    zipped.sort(key=lambda (distance, word) : (word not in inputWords, distance)) # Triple negation: words in inputWords go to the top.
+    zipped.sort(key=lambda distance, word : (word not in inputWords, distance)) # Triple negation: words in inputWords go to the top.
     return [ w for (dist,w) in zipped[:limit] ]
 
 
@@ -100,8 +100,8 @@ def main():
     # output = query(wordList, gloveService)
     output = intersection(wordList, gloveService, limit=10)
     for item in output:
-        # print "\t".join(map(str, item))
-        print item
+        # print("\t".join(map(str, item)))
+        print(item)
 
 
 if __name__=="__main__":

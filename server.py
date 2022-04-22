@@ -1,8 +1,6 @@
 import sys
-import BaseHTTPServer
-import SimpleHTTPServer
-import urlparse
-import json
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 import argparse
 
 import glove
@@ -10,7 +8,7 @@ import glove
 
 def getQuery(queryParsed):
     try:
-        return queryParsed['q'][0].decode("utf-8")
+        return queryParsed['q'][0]
     except:
         return None
 
@@ -21,7 +19,7 @@ def getFlag(queryParsed, arg):
     return arg in queryParsed and queryParsed[arg][0]=='1'
 
 
-class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class MyRequestHandler(SimpleHTTPRequestHandler):
 
     # content is already serialized!
     def sendContent(self, content, format="json", status=200):
@@ -29,13 +27,13 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'text/'+format+'; charset=utf-8')
         self.end_headers()
 
-        self.wfile.write(content)
+        self.wfile.write(content.encode(encoding='utf_8'))
         self.wfile.close()
 
     def do_GET(self):
       try:
-        parsedParams = urlparse.urlparse(self.path)
-        queryParsed = urlparse.parse_qs(parsedParams.query)
+        parsedParams = urlparse(self.path)
+        queryParsed = parse_qs(parsedParams.query)
         query = getQuery(queryParsed)
 
         status = 200
@@ -63,7 +61,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                             limit=limit, useGlobalProjection=useGlobalProjection)
 
         elif matches(command, ("vis",)):
-            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+            return SimpleHTTPRequestHandler.do_GET(self)
 
         else:
             self.sendContent("unknown service: "+command, status=400)
@@ -77,7 +75,7 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     # Allow XSS:
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
-        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
+        SimpleHTTPRequestHandler.end_headers(self)
 
 g_glove = None
 
@@ -99,7 +97,7 @@ Can be overridden with /glove/?q=query&globalProjection=0''')
 
     server_address = ('0.0.0.0', args.port)
 
-    server = BaseHTTPServer.HTTPServer(server_address, MyRequestHandler)
+    server = HTTPServer(server_address, MyRequestHandler)
     sys.stderr.write("Service has started.\n")
     server.serve_forever()
 
